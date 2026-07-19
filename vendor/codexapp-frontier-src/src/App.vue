@@ -590,6 +590,8 @@
               type="button"
               :title="t('Refresh connection')"
               :aria-label="t('Refresh connection')"
+              :aria-busy="isManualConnectionRefreshInProgress"
+              :disabled="isManualConnectionRefreshInProgress"
               @click="reloadFrontierPage"
             >
               <span class="content-header-connection-dot" aria-hidden="true" />
@@ -1321,6 +1323,7 @@ type ChatWidthMode = 'standard' | 'wide' | 'extra-wide'
 type FrontierConnectionState = 'connecting' | 'connected' | 'reconnecting' | 'fallback' | 'offline'
 
 const connectionState = ref<FrontierConnectionState>('connecting')
+const isManualConnectionRefreshInProgress = ref(false)
 const connectionStateLabel = computed(() => {
   if (connectionState.value === 'connected') return t('Online')
   if (connectionState.value === 'offline') return t('Offline')
@@ -1335,11 +1338,22 @@ function onConnectionStateEvent(event: Event): void {
   }
 }
 
-function reloadFrontierPage(): void {
-  if (typeof window === 'undefined') return
+async function reloadFrontierPage(): Promise<void> {
+  if (typeof window === 'undefined' || isManualConnectionRefreshInProgress.value) return
+  isManualConnectionRefreshInProgress.value = true
   connectionState.value = 'reconnecting'
   window.sessionStorage.setItem('codex-frontier.manual-refresh-at', new Date().toISOString())
-  window.location.reload()
+  restartNotificationStream()
+  try {
+    await refreshAll({
+      includeSelectedThreadMessages: true,
+      awaitAncillaryRefreshes: true,
+      forceThreadRefresh: true,
+    })
+    await syncThreadSelectionWithRoute()
+  } finally {
+    isManualConnectionRefreshInProgress.value = false
+  }
 }
 
 type TerminalHeaderQuickCommand = {
@@ -1553,6 +1567,7 @@ const {
   reorderProject,
   pinProjectToTop,
   startPolling,
+  restartNotificationStream,
   stopPolling,
   primeSelectedThread,
   rollbackSelectedThread,

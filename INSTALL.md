@@ -2,7 +2,7 @@
 
 ## Existing configured device
 
-Download `Codex-Frontier-2.6.0.apk` from the GitHub release, verify its SHA-256 is `380f7fc9e99d76ad7d3134d9890e3b9ce8192590c0848532a3190ae2eda664bf`, and install it as an update. The package signature is unchanged from earlier Frontier builds.
+Download `Codex-Frontier-2.7.0.apk` from the GitHub release, verify its SHA-256 is `3fbed12dc34015d25ea49e4480adf0e854aaec7da42cedc5b0b16c006bf0dd56`, and install it as an update. The package signature is unchanged from earlier Frontier builds.
 
 The update does not launch the app during installation. On the next icon tap, the native loading surface waits for the isolated runtime and reveals the UI only after a stable visual frame is ready.
 
@@ -44,4 +44,3 @@ The installed package requests Termux to execute `codex-frontier-start.sh` in th
 - reuses a healthy port 5902 runtime;
 - restarts only a PID whose exact command line, process group, and session belong to this project;
 - never opens an Android activity or browser.
-

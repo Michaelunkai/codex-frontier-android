@@ -23,8 +23,8 @@ class CodexFrontierConfigTests(unittest.TestCase):
         root = ET.parse(ROOT / "AndroidManifest.xml").getroot()
         android = "{http://schemas.android.com/apk/res/android}"
         self.assertEqual(root.attrib["package"], "com.michaelovsky.codexsubscription.isolated")
-        self.assertEqual(root.attrib[android + "versionCode"], "9")
-        self.assertEqual(root.attrib[android + "versionName"], "2.6.0")
+        self.assertEqual(root.attrib[android + "versionCode"], "10")
+        self.assertEqual(root.attrib[android + "versionName"], "2.7.0")
 
     def test_launcher_uses_independent_root_and_port(self):
         source = (ROOT / "src/com/michaelovsky/codexsubscription/isolated/RuntimeContract.java").read_text()
@@ -185,7 +185,12 @@ class CodexFrontierConfigTests(unittest.TestCase):
         self.assertIn("X-Codex-Retry-Attempt", rpc)
         self.assertIn("codex-connection-state", rpc)
         self.assertIn("content-header-connection", app)
-        self.assertIn("window.location.reload()", app)
+        self.assertNotIn("window.location.reload()", app)
+        self.assertIn("restartNotificationStream", app)
+        self.assertIn("forceThreadRefresh: true", app)
+        self.assertIn("AbortSignal.timeout", rpc)
+        self.assertIn("WEBSOCKET_FALLBACK_AFTER_ATTEMPTS", rpc)
+        self.assertIn("BACKGROUND_STATUS_RECONCILE_MS", (ROOT / "vendor/codexapp-frontier-src/src/composables/useDesktopState.ts").read_text())
         self.assertNotIn("animation: frontier-connection-pulse", app)
         self.assertIn("MOBILE_RESUME_RELOAD_MIN_HIDDEN_MS = 5_000", app)
         self.assertIn("-webkit-overflow-scrolling: touch", conversation)
@@ -209,6 +214,24 @@ class CodexFrontierConfigTests(unittest.TestCase):
         self.assertIn("queueProcessingByThreadId", state)
         self.assertIn("queueDrainTimersByThreadId", bridge)
         self.assertIn("queueDrainDueAtByThreadId", bridge)
+
+    def test_transport_and_hydration_have_independent_recovery_guards(self):
+        rpc = (ROOT / "vendor/codexapp-frontier-src/src/api/codexRpcClient.ts").read_text()
+        server = (ROOT / "vendor/codexapp-frontier-src/src/server/httpServer.ts").read_text()
+        bridge = (ROOT / "vendor/codexapp-frontier-src/src/server/codexAppServerBridge.ts").read_text()
+        state = (ROOT / "vendor/codexapp-frontier-src/src/composables/useDesktopState.ts").read_text()
+        app = (ROOT / "vendor/codexapp-frontier-src/src/App.vue").read_text()
+        self.assertIn("AbortSignal.timeout", rpc)
+        self.assertIn("WEBSOCKET_FALLBACK_AFTER_ATTEMPTS", rpc)
+        self.assertIn("client.ping()", server)
+        self.assertIn("client.terminate()", server)
+        self.assertIn("ws.on('pong'", server)
+        self.assertIn("Codex app-server request timed out", bridge)
+        self.assertIn("CODEX_DEFAULT_MODEL_ID = 'gpt-5.6-sol'", state)
+        self.assertIn("BACKGROUND_STATUS_RECONCILE_MS", state)
+        self.assertIn("restartNotificationStream", state)
+        self.assertIn("forceThreadRefresh: true", app)
+        self.assertNotIn("window.location.reload()", app)
 
     def test_terminal_turn_notifications_are_native_sound_and_deduplicated(self):
         watchdog = (ROOT / "src/com/michaelovsky/codexsubscription/isolated/RuntimeWatchdogService.java").read_text()

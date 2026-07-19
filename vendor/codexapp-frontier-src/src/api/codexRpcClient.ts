@@ -24,6 +24,9 @@ type ServerRequestReplyBody = {
 export type RpcConnectionState = 'connecting' | 'connected' | 'reconnecting' | 'fallback' | 'offline'
 
 const RETRYABLE_RPC_STATUS = new Set([429, 502, 503, 504])
+const READ_RPC_TIMEOUT_MS = 20_000
+const WRITE_RPC_TIMEOUT_MS = 60_000
+const WEBSOCKET_FALLBACK_AFTER_ATTEMPTS = 2
 const READ_ONLY_RPC_METHODS = new Set([
   'initialize',
   'account/rateLimits/read',
@@ -77,6 +80,7 @@ export async function rpcCall<T>(method: string, params?: unknown): Promise<T> {
           'X-Codex-Retry-Attempt': String(attempt),
         },
         body: JSON.stringify(body),
+        signal: AbortSignal.timeout(retryable ? READ_RPC_TIMEOUT_MS : WRITE_RPC_TIMEOUT_MS),
       })
       if (!retryable || !RETRYABLE_RPC_STATUS.has(response.status) || attempt + 1 >= maxAttempts) {
         break
@@ -341,7 +345,13 @@ export function subscribeRpcNotifications(onNotification: (value: RpcNotificatio
         attachSse()
         return
       }
-      scheduleReconnect(() => attachWebSocket(attempt + 1), attempt)
+      scheduleReconnect(
+        () => {
+          if (attempt >= WEBSOCKET_FALLBACK_AFTER_ATTEMPTS) attachSse(attempt + 1)
+          else attachWebSocket(attempt + 1)
+        },
+        attempt,
+      )
     }
 
     cleanup = () => {

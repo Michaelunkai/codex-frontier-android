@@ -6452,7 +6452,11 @@ class AppServerProcess {
   private readBuffer = ''
   private nextId = 1
   private stopping = false
-  private readonly pending = new Map<number, { resolve: (value: unknown) => void; reject: (reason?: unknown) => void }>()
+  private readonly pending = new Map<number, {
+    resolve: (value: unknown) => void
+    reject: (reason?: unknown) => void
+    timeout: ReturnType<typeof setTimeout>
+  }>()
   private readonly notificationListeners = new Set<(value: { method: string; params: unknown }) => void>()
   private readonly pendingServerRequests = new Map<number, PendingServerRequest>()
   private readonly streamEventsByThreadId = new Map<string, StreamEventFrame[]>()
@@ -6550,6 +6554,7 @@ class AppServerProcess {
 
       const failure = new Error(this.stopping ? 'codex app-server stopped' : 'codex app-server exited unexpectedly')
       for (const request of this.pending.values()) {
+        clearTimeout(request.timeout)
         request.reject(failure)
       }
 
@@ -6583,6 +6588,7 @@ class AppServerProcess {
       this.pending.delete(message.id)
 
       if (!pendingRequest) return
+      clearTimeout(pendingRequest.timeout)
 
       if (message.error) {
         pendingRequest.reject(new Error(message.error.message))
@@ -6899,7 +6905,15 @@ class AppServerProcess {
     const id = this.nextId++
 
     return new Promise((resolve, reject) => {
-      this.pending.set(id, { resolve, reject })
+      const timeoutMs = method === 'turn/start' ? 120_000 : 60_000
+      const timeout = setTimeout(() => {
+        const pendingRequest = this.pending.get(id)
+        if (!pendingRequest) return
+        this.pending.delete(id)
+        pendingRequest.reject(new Error(`Codex app-server request timed out after ${timeoutMs}ms (${method})`))
+      }, timeoutMs)
+      timeout.unref()
+      this.pending.set(id, { resolve, reject, timeout })
 
       this.sendLine({
         jsonrpc: '2.0',
@@ -7036,6 +7050,7 @@ class AppServerProcess {
 
     const failure = new Error('codex app-server stopped')
     for (const request of this.pending.values()) {
+      clearTimeout(request.timeout)
       request.reject(failure)
     }
     this.pending.clear()

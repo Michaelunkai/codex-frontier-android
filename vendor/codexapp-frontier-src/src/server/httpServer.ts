@@ -254,6 +254,23 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
     dispose: () => bridge.dispose(),
     attachWebSocket: (server: HttpServer) => {
       const wss = new WebSocketServer({ noServer: true })
+      const alive = new WeakMap<WebSocket, boolean>()
+      const heartbeat = setInterval(() => {
+        for (const client of wss.clients) {
+          if (alive.get(client) === false) {
+            client.terminate()
+            continue
+          }
+          alive.set(client, false)
+          try {
+            client.ping()
+          } catch {
+            client.terminate()
+          }
+        }
+      }, 20_000)
+      heartbeat.unref()
+      server.once('close', () => clearInterval(heartbeat))
 
       server.on('upgrade', (req: IncomingMessage, socket, head) => {
         const url = new URL(req.url ?? '', 'http://localhost')
@@ -273,10 +290,16 @@ export function createServer(options: ServerOptions = {}): ServerInstance {
       })
 
       wss.on('connection', (ws: WebSocket) => {
+        alive.set(ws, true)
+        ws.on('pong', () => alive.set(ws, true))
         ws.send(JSON.stringify({ method: 'ready', params: { ok: true }, atIso: new Date().toISOString() }))
         const unsubscribe = bridge.subscribeNotifications((notification) => {
           if (ws.readyState !== 1) return
-          ws.send(JSON.stringify(notification))
+          try {
+            ws.send(JSON.stringify(notification))
+          } catch {
+            ws.terminate()
+          }
         })
 
         ws.on('close', unsubscribe)

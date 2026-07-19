@@ -17,11 +17,14 @@ Research was performed headlessly before implementation. The resulting defaults 
 - The uncategorized `specialUse` foreground-service type is the supported fit for this local runtime watchdog: <https://developer.android.com/develop/background-work/services/fgs/service-types>
 - Foreground services must publish a notification, while denial of notification permission does not prevent service launch: <https://developer.android.com/develop/ui/compose/notifications/notification-permission>
 - Termux `RUN_COMMAND` supports background execution with a result `PendingIntent`; Frontier uses that interface without opening Termux or the app activity: <https://github.com/termux/termux-app/wiki/RUN_COMMAND-Intent>
+- Android activity lifecycle guidance informed state-preserving resume synchronization instead of destructive page reloads: <https://developer.android.com/guide/components/activities/activity-lifecycle>
+- The `ws` project heartbeat guidance informed server ping/pong checks that terminate half-open notification sockets and trigger bounded client recovery: <https://github.com/websockets/ws#how-to-detect-and-close-broken-connections>
 
 ## Applied decisions
 
 - Separate Android package, WebView data, source tree, signing material, port, HOME, CODEX_HOME, auth snapshot, databases, workspace, logs, skills, and plugins.
 - Project-local Codex CLI 0.144.6 and current provenance-recorded CodexApp source build.
 - Headless boot receiver and sticky foreground watchdog; exact port/PID ownership and serialized startup.
+- State-preserving manual recovery, bounded local RPC deadlines, WebSocket heartbeat, SSE fallback, and periodic visible-thread reconciliation.
 - Real `thread/goal/*` RPC integration and desktop-oriented slash commands in the composer.
 - Supported stable capabilities enabled explicitly; unsafe or under-development feature flags remain disabled.

@@ -108,6 +108,8 @@ const REASONING_EFFORT_OPTIONS: ReasoningEffort[] = [
 ]
 const GLOBAL_SERVER_REQUEST_SCOPE = '__global__'
 const OPENCODE_ZEN_DEFAULT_MODEL = 'big-pickle'
+const CODEX_DEFAULT_MODEL_ID = 'gpt-5.6-sol'
+const BACKGROUND_STATUS_RECONCILE_MS = 8_000
 const CODEX_CLI_MISSING_MESSAGE = 'Codex CLI not found. Install @openai/codex or set CODEXUI_CODEX_COMMAND.'
 type SelectThreadResult = 'ok' | 'not-found' | 'error'
 
@@ -285,7 +287,7 @@ function readSelectedModel(
   const contextId = toThreadContextId(threadId)
   const contextModelId = normalizeStoredModelId(state[contextId])
   if (contextModelId) return contextModelId
-  return normalizeStoredModelId(state[NEW_THREAD_COLLABORATION_MODE_CONTEXT])
+  return normalizeStoredModelId(state[NEW_THREAD_COLLABORATION_MODE_CONTEXT]) || CODEX_DEFAULT_MODEL_ID
 }
 
 function saveSelectedModelMap(state: Record<string, string>): void {
@@ -1491,7 +1493,7 @@ export function useDesktopState() {
     readSelectedCollaborationMode(selectedCollaborationModeByContext.value, selectedThreadId.value),
   )
   const selectedModelId = ref(readSelectedModel(selectedModelIdByContext.value, selectedThreadId.value))
-  const selectedReasoningEffort = ref<ReasoningEffort | ''>('')
+  const selectedReasoningEffort = ref<ReasoningEffort | ''>('medium')
   const selectedSpeedMode = ref<SpeedMode>('standard')
   const activeProviderId = ref('')
   const codexCliMissingError = ref('')
@@ -1585,6 +1587,7 @@ export function useDesktopState() {
   const lastMessageLoadFailureAtByThreadId = new Map<string, number>()
   let threadListNextCursor: string | null = null
   let threadListBackgroundTimer: number | null = null
+  let backgroundStatusReconcileTimer: ReturnType<typeof setInterval> | null = null
   let isLoadingRemainingThreadPages = false
   let hasLoadedAllThreadPages = false
   let loadedThreadListGroups: UiProjectGroup[] = []
@@ -1629,6 +1632,7 @@ export function useDesktopState() {
       ? (liveReasoningTextByThreadId.value[threadId] ?? '').trim()
       : ''
     const liveErrorText = (turnErrorByThreadId.value[threadId]?.message ?? '').trim()
+    const isTransientReconnect = isInProgress && /^reconnecting(?:\.{3})?\s*\d+\/\d+$/i.test(liveErrorText)
     let latestPersistedTurnErrorText = ''
     if (!isInProgress && liveErrorText) {
       const persistedMessages = persistedMessagesByThreadId.value[threadId] ?? []
@@ -1639,14 +1643,15 @@ export function useDesktopState() {
         break
       }
     }
-    const errorText =
-      !isInProgress && liveErrorText && latestPersistedTurnErrorText === liveErrorText
+    const errorText = isTransientReconnect
+      ? ''
+      : !isInProgress && liveErrorText && latestPersistedTurnErrorText === liveErrorText
         ? ''
         : liveErrorText
 
     if (!isInProgress && !activity && !reasoningText && !errorText) return null
     return {
-      activityLabel: activity?.label || 'Thinking',
+      activityLabel: isTransientReconnect ? liveErrorText : (activity?.label || 'Thinking'),
       activityDetails: activity?.details ?? [],
       reasoningText,
       errorText,
@@ -5669,6 +5674,20 @@ export function useDesktopState() {
       applyRealtimeUpdates(notification)
       queueEventDrivenSync(notification)
     })
+    if (backgroundStatusReconcileTimer === null) {
+      backgroundStatusReconcileTimer = globalThis.setInterval(() => {
+        if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return
+        void syncThreadStatus()
+      }, BACKGROUND_STATUS_RECONCILE_MS)
+    }
+  }
+
+  function restartNotificationStream(): void {
+    if (stopNotificationStream) {
+      stopNotificationStream()
+      stopNotificationStream = null
+    }
+    startPolling()
   }
 
   async function loadPendingServerRequestsFromBridge(): Promise<void> {
@@ -5717,6 +5736,10 @@ export function useDesktopState() {
     if (threadListBackgroundTimer !== null && typeof window !== 'undefined') {
       window.clearTimeout(threadListBackgroundTimer)
       threadListBackgroundTimer = null
+    }
+    if (backgroundStatusReconcileTimer !== null && typeof window !== 'undefined') {
+      globalThis.clearInterval(backgroundStatusReconcileTimer)
+      backgroundStatusReconcileTimer = null
     }
     if (typeof window !== 'undefined') {
       for (const timerId of delayedTurnSyncTimerByThreadId.values()) {
@@ -5881,6 +5904,7 @@ export function useDesktopState() {
     reorderProject,
     pinProjectToTop,
     startPolling,
+    restartNotificationStream,
     stopPolling,
     primeSelectedThread,
   }
