@@ -1,0 +1,6 @@
+{"type":"verification.started","transport":"codexapp-rpc","clientVersion":"0.144.6","threadId":"019f7ad3-cd3f-7c40-9c5a-9c397dc8c611","model":"gpt-5.6-luna","reasoningEffort":"low"}
+{"type":"item.completed","item":{"type":"agent_message","text":"Provider: OpenAI Codex (native ChatGPT subscription); Model: gpt-5.6-luna; Reasoning effort: low"},"turnId":"019f7ad3-cdd7-73e0-bb4c-f0e75f13ebce"}
+{"type":"turn.completed","verified":true,"acceptedModel":"gpt-5.6-luna","acceptedEffort":"low","selfReportVerified":true}
+{"type":"item.completed","item":{"type":"agent_message","text":"Provider: OpenAI Codex (native ChatGPT subscription); Model: gpt-5.6-sol; Reasoning effort: ultra"},"turnId":"019f7ad3-da28-72f0-b8fb-6350e5eeb16f"}
+{"type":"turn.completed","verified":true,"acceptedModel":"gpt-5.6-sol","acceptedEffort":"ultra","selfReportVerified":true}
+{"type":"thread.archived","disposable":true}

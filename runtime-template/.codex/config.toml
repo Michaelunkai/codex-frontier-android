@@ -1,0 +1,46 @@
+model = "gpt-5.6-sol"
+model_reasoning_effort = "ultra"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+personality = "pragmatic"
+web_search = "live"
+
+[features]
+memories = true
+goals = true
+multi_agent = true
+apps = true
+plugins = true
+hooks = true
+browser_use = true
+browser_use_external = true
+browser_use_full_cdp_access = true
+computer_use = true
+image_generation = true
+fast_mode = true
+in_app_browser = true
+mentions_v2 = true
+plugin_sharing = true
+remote_compaction_v2 = true
+shell_snapshot = true
+shell_tool = true
+skill_mcp_dependency_install = true
+tool_call_mcp_elicitation = true
+tool_suggest = true
+unified_exec = true
+workspace_dependencies = true
+
+[memories]
+generate_memories = true
+use_memories = true
+disable_on_external_context = false
+min_rate_limit_remaining_percent = 0
+
+[projects."/data/data/com.termux/files/home/codex-subscription-isolated-app/workspace"]
+trust_level = "trusted"
+
+[projects."/data/data/com.termux/files/home/com.michaelovsky.codexsubscription.isolated"]
+trust_level = "trusted"
+
+[projects."/data/data/com.termux/files/home/nvidia-isolated-app"]
+trust_level = "trusted"

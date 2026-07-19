@@ -1,0 +1,7 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -eu
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+case "${1:-status}" in
+  status|test|stage) exec "$SCRIPT_DIR/codex-privilege" status ;;
+  *) exec "$SCRIPT_DIR/codex-privilege" "$@" ;;
+esac

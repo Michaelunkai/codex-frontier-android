@@ -1,0 +1,37 @@
+# Private runtime and user data
+runtime/
+workspace/
+
+# Signing and local Android SDK inputs
+build/
+build-tools/
+*.keystore
+signing.properties
+
+# Installed dependencies and generated builds
+**/node_modules/
+vendor/codexapp-frontier-src/dist/
+vendor/codexapp-frontier-src/dist-cli/
+vendor/codexapp-native-npm/
+vendor/codex-cli-frontier/packages/
+dist/
+
+# Device-specific evidence
+isolation/*.json
+*.log
+*.sqlite*
+*.db
+
+# Credentials and transient files
+auth.json
+accounts.json
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.jks
+__pycache__/
+*.pyc
+.headless-selection-*.json
+

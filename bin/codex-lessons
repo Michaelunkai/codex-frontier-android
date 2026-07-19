@@ -1,0 +1,5 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -eu
+LESSON_FILE="${CODEX_RUNTIME_ROOT:?CODEX_RUNTIME_ROOT is required}/memory/lessons.md"
+if [ -f "$LESSON_FILE" ]; then exec /data/data/com.termux/files/usr/bin/sed -n '1,400p' "$LESSON_FILE"; fi
+printf 'no isolated lessons recorded\n'

@@ -1,0 +1,11 @@
+#!/data/data/com.termux/files/usr/bin/bash
+set -eu
+if [ "$#" -ne 1 ]; then printf 'usage: codex-uninstall <package>\n' >&2; exit 2; fi
+case "$1" in
+  com.michaelovsky.codexapplauncher|com.michaelovsky.codexnvidia.isolated|com.michaelovsky.codexsubscription.isolated|com.termux|moe.shizuku.privileged.api|android|com.android.systemui|com.android.settings)
+    printf 'protected package refused: %s\n' "$1" >&2
+    exit 78
+    ;;
+esac
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+exec "$SCRIPT_DIR/codex-pm" uninstall "$1"
