@@ -2,7 +2,7 @@
 
 ## Existing configured device
 
-Download `Codex-Frontier-2.7.0.apk` from the GitHub release, verify its SHA-256 is `3fbed12dc34015d25ea49e4480adf0e854aaec7da42cedc5b0b16c006bf0dd56`, and install it as an update. The package signature is unchanged from earlier Frontier builds.
+Download `Codex-Frontier-2.8.0.apk` from the GitHub release, verify its SHA-256 is `01ea2c4e5e31bf0090c3f4ea0d2fcf1fc23cc0430b27c374c4c6a582ebf389e2`, and install it as an update. The package signature is unchanged from earlier Frontier builds.
 
 The update does not launch the app during installation. On the next icon tap, the native loading surface waits for the isolated runtime and reveals the UI only after a stable visual frame is ready.
 

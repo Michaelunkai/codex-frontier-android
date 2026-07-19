@@ -1356,6 +1356,10 @@ async function reloadFrontierPage(): Promise<void> {
   }
 }
 
+function onNativeSoftRefresh(): void {
+  void reloadFrontierPage()
+}
+
 type TerminalHeaderQuickCommand = {
   label: string
   value: string
@@ -2236,6 +2240,7 @@ onMounted(() => {
   window.addEventListener('focus', onWindowFocus)
   window.addEventListener('resize', updateVisualViewportState)
   window.addEventListener('codex-connection-state', onConnectionStateEvent)
+  window.addEventListener('codex-frontier-soft-refresh', onNativeSoftRefresh)
   window.visualViewport?.addEventListener('resize', updateVisualViewportState)
   window.visualViewport?.addEventListener('scroll', updateVisualViewportState)
   updateVisualViewportState()
@@ -2271,6 +2276,7 @@ onUnmounted(() => {
   window.removeEventListener('focus', onWindowFocus)
   window.removeEventListener('resize', updateVisualViewportState)
   window.removeEventListener('codex-connection-state', onConnectionStateEvent)
+  window.removeEventListener('codex-frontier-soft-refresh', onNativeSoftRefresh)
   window.visualViewport?.removeEventListener('resize', updateVisualViewportState)
   window.visualViewport?.removeEventListener('scroll', updateVisualViewportState)
   darkModeMediaQuery?.removeEventListener('change', applyDarkMode)

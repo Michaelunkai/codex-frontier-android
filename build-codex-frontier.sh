@@ -5,7 +5,7 @@ APP_HOME="/data/data/com.termux/files/home/codex-subscription-isolated-app"
 ANDROID_JAR="$APP_HOME/build-tools/android.jar"
 KEYSTORE="$APP_HOME/build/codex-frontier.keystore"
 SIGNING_PROPERTIES="$APP_HOME/build/signing.properties"
-OUTPUT="$APP_HOME/dist/Codex-Frontier-2.7.0.apk"
+OUTPUT="$APP_HOME/dist/Codex-Frontier-2.8.0.apk"
 EXPECTED_PACKAGE="com.michaelovsky.codexsubscription.isolated"
 
 if [ ! -f "$ANDROID_JAR" ] || [ ! -f "$KEYSTORE" ] || [ ! -f "$SIGNING_PROPERTIES" ]; then
@@ -49,15 +49,15 @@ apksigner sign \
   --v2-signing-enabled true \
   --v3-signing-enabled true \
   --v4-signing-enabled true \
-  --out "$WORK_DIR/Codex-Frontier-2.7.0.apk" \
+  --out "$WORK_DIR/Codex-Frontier-2.8.0.apk" \
   "$WORK_DIR/aligned.apk"
 
-zipalign -c 4 "$WORK_DIR/Codex-Frontier-2.7.0.apk"
-apksigner verify --verbose --print-certs "$WORK_DIR/Codex-Frontier-2.7.0.apk" >/dev/null
-aapt dump badging "$WORK_DIR/Codex-Frontier-2.7.0.apk" | grep -q "package: name='$EXPECTED_PACKAGE' versionCode='10' versionName='2.7.0'"
-cp "$WORK_DIR/Codex-Frontier-2.7.0.apk" "$OUTPUT"
-if [ -f "$WORK_DIR/Codex-Frontier-2.7.0.apk.idsig" ]; then
-  cp "$WORK_DIR/Codex-Frontier-2.7.0.apk.idsig" "$OUTPUT.idsig"
+zipalign -c 4 "$WORK_DIR/Codex-Frontier-2.8.0.apk"
+apksigner verify --verbose --print-certs "$WORK_DIR/Codex-Frontier-2.8.0.apk" >/dev/null
+aapt dump badging "$WORK_DIR/Codex-Frontier-2.8.0.apk" | grep -q "package: name='$EXPECTED_PACKAGE' versionCode='11' versionName='2.8.0'"
+cp "$WORK_DIR/Codex-Frontier-2.8.0.apk" "$OUTPUT"
+if [ -f "$WORK_DIR/Codex-Frontier-2.8.0.apk.idsig" ]; then
+  cp "$WORK_DIR/Codex-Frontier-2.8.0.apk.idsig" "$OUTPUT.idsig"
 fi
 sha256sum "$OUTPUT" > "$OUTPUT.sha256"
 cat "$OUTPUT.sha256"

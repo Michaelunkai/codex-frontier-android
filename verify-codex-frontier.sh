@@ -4,7 +4,7 @@ set -euo pipefail
 PROJECT_ROOT="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 CODEX_HOME_DIR="$PROJECT_ROOT/runtime/.codex"
 ISOLATED_HOME="$PROJECT_ROOT/runtime/home"
-APK="$PROJECT_ROOT/dist/Codex-Frontier-2.7.0.apk"
+APK="$PROJECT_ROOT/dist/Codex-Frontier-2.8.0.apk"
 HASH_FILE="$APK.sha256"
 PROTECTED_BASELINE="$PROJECT_ROOT/isolation/protected-preinstall-baseline.json"
 SELECTION_EVIDENCE="$PROJECT_ROOT/isolation/headless-selection-verification.json"
@@ -57,11 +57,11 @@ test -n "$expected_apk_sha"
 printf '%s  %s\n' "$expected_apk_sha" "$APK" | sha256sum -c - >/dev/null
 zipalign -c 4 "$APK" >/dev/null
 apksigner verify --verbose --print-certs "$APK" >/dev/null
-aapt dump badging "$APK" | grep -Fq "package: name='$CODEX_PACKAGE' versionCode='10' versionName='2.7.0'"
+aapt dump badging "$APK" | grep -Fq "package: name='$CODEX_PACKAGE' versionCode='11' versionName='2.8.0'"
 
-installed_fact=$("$RISH" -c "apk=\$(pm path $CODEX_PACKAGE | sed -n 's/^package://p' | head -n 1); test -n \"\$apk\"; toybox sha256sum \"\$apk\"; dumpsys package $CODEX_PACKAGE | grep -m1 versionName=2.7.0" 2>&1)
+installed_fact=$("$RISH" -c "apk=\$(pm path $CODEX_PACKAGE | sed -n 's/^package://p' | head -n 1); test -n \"\$apk\"; toybox sha256sum \"\$apk\"; dumpsys package $CODEX_PACKAGE | grep -m1 versionName=2.8.0" 2>&1)
 printf '%s\n' "$installed_fact" | grep -Fq "$expected_apk_sha"
-printf '%s\n' "$installed_fact" | grep -Fq 'versionName=2.7.0'
+printf '%s\n' "$installed_fact" | grep -Fq 'versionName=2.8.0'
 
 read -r ORIGINAL_SHA256 NVIDIA_SHA256 < <(python - "$PROTECTED_BASELINE" "$ORIGINAL_PACKAGE" "$NVIDIA_PACKAGE" <<'PY'
 import json

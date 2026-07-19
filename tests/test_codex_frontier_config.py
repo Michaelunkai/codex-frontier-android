@@ -23,8 +23,8 @@ class CodexFrontierConfigTests(unittest.TestCase):
         root = ET.parse(ROOT / "AndroidManifest.xml").getroot()
         android = "{http://schemas.android.com/apk/res/android}"
         self.assertEqual(root.attrib["package"], "com.michaelovsky.codexsubscription.isolated")
-        self.assertEqual(root.attrib[android + "versionCode"], "10")
-        self.assertEqual(root.attrib[android + "versionName"], "2.7.0")
+        self.assertEqual(root.attrib[android + "versionCode"], "11")
+        self.assertEqual(root.attrib[android + "versionName"], "2.8.0")
 
     def test_launcher_uses_independent_root_and_port(self):
         source = (ROOT / "src/com/michaelovsky/codexsubscription/isolated/RuntimeContract.java").read_text()
@@ -188,7 +188,12 @@ class CodexFrontierConfigTests(unittest.TestCase):
         self.assertNotIn("window.location.reload()", app)
         self.assertIn("restartNotificationStream", app)
         self.assertIn("forceThreadRefresh: true", app)
+        self.assertIn("codex-frontier-soft-refresh", app)
+        self.assertIn("codex-frontier-soft-refresh", activity)
+        self.assertNotIn("webView.reload()", activity)
         self.assertIn("AbortSignal.timeout", rpc)
+        self.assertIn("BRIDGE_READ_TIMEOUT_MS", rpc)
+        self.assertIn("BRIDGE_WRITE_TIMEOUT_MS", rpc)
         self.assertIn("WEBSOCKET_FALLBACK_AFTER_ATTEMPTS", rpc)
         self.assertIn("BACKGROUND_STATUS_RECONCILE_MS", (ROOT / "vendor/codexapp-frontier-src/src/composables/useDesktopState.ts").read_text())
         self.assertNotIn("animation: frontier-connection-pulse", app)
@@ -227,6 +232,8 @@ class CodexFrontierConfigTests(unittest.TestCase):
         self.assertIn("client.terminate()", server)
         self.assertIn("ws.on('pong'", server)
         self.assertIn("Codex app-server request timed out", bridge)
+        self.assertIn("const writeEvent = (payload: string): boolean", bridge)
+        self.assertIn("if (closed) return", bridge)
         self.assertIn("CODEX_DEFAULT_MODEL_ID = 'gpt-5.6-sol'", state)
         self.assertIn("BACKGROUND_STATUS_RECONCILE_MS", state)
         self.assertIn("restartNotificationStream", state)

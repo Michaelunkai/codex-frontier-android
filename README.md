@@ -7,9 +7,9 @@ Codex Frontier is an isolated Android workspace for the native OpenAI Codex app-
 ## Release
 
 - Android package: `com.michaelovsky.codexsubscription.isolated`
-- Version: `2.7.0` (`versionCode 10`)
+- Version: `2.8.0` (`versionCode 11`)
 - Local UI: `http://127.0.0.1:5902`
-- APK: `Codex-Frontier-2.7.0.apk` in the GitHub release
+- APK: `Codex-Frontier-2.8.0.apk` in the GitHub release
 - APK SHA-256: `3fbed12dc34015d25ea49e4480adf0e854aaec7da42cedc5b0b16c006bf0dd56`
 - Signing certificate SHA-256: `4d735fd7eecdc74492fab715b49c5879c250162aed3553dc13c09394b5d72a66`
 
@@ -48,7 +48,11 @@ Accordingly, a new device needs Termux, the project runtime under the expected T
 - `build-codex-frontier.sh` — deterministic raw Android build
 - `isolation-preflight.sh` and `verify-codex-frontier.sh` — non-UI safety verification
 
-## Verification performed for 2.7.0
+## Verification performed for 2.8.0
+
+- Native and header refreshes preserve the active route, thread, and composer instead of reloading the WebView.
+- Startup metadata and pending-request calls have bounded read/write deadlines.
+- WebSocket heartbeat, SSE fallback, and race-safe SSE cleanup recover transport failures in place.
 
 - 34 Python/source contract tests passed
 - 167 frontend unit tests passed

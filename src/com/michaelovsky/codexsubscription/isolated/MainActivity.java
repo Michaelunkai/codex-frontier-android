@@ -398,10 +398,15 @@ public final class MainActivity extends Activity {
                         pageLoadGeneration += 1;
                         runtimePageLoading = false;
                         webView.stopLoading();
-                        beginRuntimePageLoad();
                         String currentUrl = webView.getUrl();
-                        if (currentUrl != null && currentUrl.startsWith(WEB_URL)) webView.reload();
-                        else webView.loadUrl(WEB_URL);
+                        if (guiLoaded && currentUrl != null && currentUrl.startsWith(WEB_URL)) {
+                            webView.evaluateJavascript(
+                                    "window.dispatchEvent(new CustomEvent('codex-frontier-soft-refresh'))",
+                                    null);
+                        } else {
+                            beginRuntimePageLoad();
+                            webView.loadUrl(WEB_URL);
+                        }
                     }
                 });
             }

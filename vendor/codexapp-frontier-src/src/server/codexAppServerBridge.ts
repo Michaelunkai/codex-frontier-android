@@ -9796,18 +9796,32 @@ export function createCodexBridgeMiddleware(): CodexBridgeMiddleware {
         res.setHeader('Connection', 'keep-alive')
         res.setHeader('X-Accel-Buffering', 'no')
 
-        const unsubscribe = middleware.subscribeNotifications((notification: { method: string; params: unknown; atIso: string }) => {
-          if (res.writableEnded || res.destroyed) return
-          res.write(`data: ${JSON.stringify(notification)}\n\n`)
+        let closed = false
+        let keepAlive: ReturnType<typeof setInterval> | null = null
+        let unsubscribe = () => {}
+        const writeEvent = (payload: string): boolean => {
+          if (closed || res.writableEnded || res.destroyed) return false
+          try {
+            res.write(payload)
+            return true
+          } catch {
+            close()
+            return false
+          }
+        }
+        unsubscribe = middleware.subscribeNotifications((notification: { method: string; params: unknown; atIso: string }) => {
+          writeEvent(`data: ${JSON.stringify(notification)}\n\n`)
         })
 
-        res.write(`event: ready\ndata: ${JSON.stringify({ ok: true })}\n\n`)
-        const keepAlive = setInterval(() => {
-          res.write(': ping\n\n')
+        writeEvent(`event: ready\ndata: ${JSON.stringify({ ok: true })}\n\n`)
+        keepAlive = setInterval(() => {
+          writeEvent(': ping\n\n')
         }, 15000)
 
-        const close = () => {
-          clearInterval(keepAlive)
+        function close() {
+          if (closed) return
+          closed = true
+          if (keepAlive !== null) clearInterval(keepAlive)
           unsubscribe()
           if (!res.writableEnded) {
             res.end()

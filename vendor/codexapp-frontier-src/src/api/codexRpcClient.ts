@@ -26,6 +26,8 @@ export type RpcConnectionState = 'connecting' | 'connected' | 'reconnecting' | '
 const RETRYABLE_RPC_STATUS = new Set([429, 502, 503, 504])
 const READ_RPC_TIMEOUT_MS = 20_000
 const WRITE_RPC_TIMEOUT_MS = 60_000
+const BRIDGE_READ_TIMEOUT_MS = 20_000
+const BRIDGE_WRITE_TIMEOUT_MS = 60_000
 const WEBSOCKET_FALLBACK_AFTER_ATTEMPTS = 2
 const READ_ONLY_RPC_METHODS = new Set([
   'initialize',
@@ -136,7 +138,10 @@ export async function rpcCall<T>(method: string, params?: unknown): Promise<T> {
 }
 
 export async function fetchRpcMethodCatalog(): Promise<string[]> {
-  const response = await fetch('/codex-api/meta/methods')
+  const response = await fetch('/codex-api/meta/methods', {
+    cache: 'no-store',
+    signal: AbortSignal.timeout(BRIDGE_READ_TIMEOUT_MS),
+  })
 
   let payload: unknown = null
   try {
@@ -161,7 +166,10 @@ export async function fetchRpcMethodCatalog(): Promise<string[]> {
 }
 
 export async function fetchRpcNotificationCatalog(): Promise<string[]> {
-  const response = await fetch('/codex-api/meta/notifications')
+  const response = await fetch('/codex-api/meta/notifications', {
+    cache: 'no-store',
+    signal: AbortSignal.timeout(BRIDGE_READ_TIMEOUT_MS),
+  })
 
   let payload: unknown = null
   try {
@@ -386,6 +394,7 @@ export async function respondServerRequest(body: ServerRequestReplyBody): Promis
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(BRIDGE_WRITE_TIMEOUT_MS),
     })
   } catch (error) {
     throw new CodexApiError(
@@ -414,7 +423,10 @@ export async function respondServerRequest(body: ServerRequestReplyBody): Promis
 }
 
 export async function fetchPendingServerRequests(): Promise<unknown[]> {
-  const response = await fetch('/codex-api/server-requests/pending')
+  const response = await fetch('/codex-api/server-requests/pending', {
+    cache: 'no-store',
+    signal: AbortSignal.timeout(BRIDGE_READ_TIMEOUT_MS),
+  })
 
   let payload: unknown = null
   try {
